@@ -33,13 +33,13 @@ flowchart TD
 ```mermaid
 flowchart TD
     A[App1]<-->A1
-    A1[Libs/OS]<-->A2
+    A1[Libs1 / OS]<-->A2
     A2[Container1]<-->E
     B[App2]<-->B1
-    B1[Libs2/OS2]<-->B2
+    B1[Libs2 / OS2]<-->B2
     B2[Container2]<-->E
     C[App3]<-->C1
-    C1[Libs3/OS3/VM]<-->C2
+    C1[Libs3 / OS3/VM]<-->C2
     C2[Container3]<-->E
     E(CRI)<-->F
     F(OS)<-->G
@@ -84,10 +84,64 @@ Container runtime interface (CRI) is a plugin interface that lets the kubelet an
 - DaemonSet - A DaemonSet ensures that all (or some) Nodes run a copy of a Pod. As nodes are added to the cluster, Pods are added to them. As nodes are removed from the cluster, those Pods are garbage collected. Deleting a DaemonSet will clean up the Pods it created.
 - Deployment - Describes the desired state and makes sure to change the actual state to the desired state if needed. A deployment manages Pods and ReplicaSets so you don’t have to.
 
-## Minikube
+## Live demo?
 
-### Install and run
+[Play with k8s](https://labs.play-with-k8s.com/)
 
-[Install minikube](https://minikube.sigs.k8s.io/docs/start/)
+1. Initializes cluster master node:
 
-[Hello Minikube (world)](https://kubernetes.io/docs/tutorials/hello-minikube/)
+```
+kubeadm init --apiserver-advertise-address $(hostname -i) --pod-network-cidr 10.5.0.0/16
+```
+
+2. Initialize cluster networking:
+
+```
+kubectl apply -f https://raw.githubusercontent.com/cloudnativelabs/kube-router/master/daemonset/kubeadm-kuberouter.yaml
+```
+
+3.0. Verify
+
+```
+kubectl get --raw='/readyz?verbose'
+```
+
+3. K8s hello world
+
+https://kubernetes.io/docs/tutorials/hello-minikube/
+
+```
+# Run a test container image that includes a webserver
+kubectl create deployment hello-node --image=registry.k8s.io/e2e-test-images/agnhost:2.39 -- /agnhost netexec --http-port=8080
+```
+
+```
+kubectl get deployments
+```
+
+```
+kubectl get pods
+```
+
+```
+kubectl taint nodes node1 node-role.kubernetes.io/master-
+kubectl taint nodes node1 node.kubernetes.io/disk-pressure-
+```
+
+```
+kubectl get events
+```
+
+```
+kubectl config view
+```
+
+Exposing pod by creating service
+
+```
+kubectl expose deployment hello-node --type=LoadBalancer --port=8080
+```
+
+```
+kubectl get services
+```
